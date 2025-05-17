@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 import redis, json, uuid, os
+from flask_cors import CORS
 
 r = redis.from_url(os.getenv("REDIS_URL", "redis://redis:6379/0"))
 app = Flask(__name__)
+CORS(app)
 @app.route('/')
 def home():
     return 'Hello, World!'

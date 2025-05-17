@@ -14,7 +14,7 @@ export default function CodeRunner() {
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`http://localhost:5000/result/${jobId}`);
+        const res = await fetch(`http://localhost:5050/result/${jobId}`);
         const data = await res.json();
 
         if (data.status === "done" || data.status === "error") {
@@ -41,7 +41,7 @@ export default function CodeRunner() {
     setPolling(true);
 
     try {
-      const res = await fetch("http://localhost:5000/run", {
+      const res = await fetch("http://localhost:5050/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, input }),
@@ -82,8 +82,7 @@ export default function CodeRunner() {
       <button
         onClick={runCode}
         disabled={polling}
-        className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-      >
+        className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
         {polling ? "Running..." : "Run Code"}
       </button>
 

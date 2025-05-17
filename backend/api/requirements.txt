@@ -2,3 +2,4 @@ flask
 redis
 gunicorn
 docker
+flask-cors
