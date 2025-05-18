@@ -6,21 +6,22 @@ from dotenv import load_dotenv
 load_dotenv()
 from flask_cors import CORS
 
-
 app = Flask(__name__)
-frontend_origin=os.getenv("FRONTEND_URL", "*")
+frontend_origin = os.getenv("FRONTEND_URL", "*")
 
 CORS(app, origins=[frontend_origin])
 
-
-def run_code(code: str, timeout=5):
+def run_code(code: str, input_text: str = '', timeout=5):
+    # Save the code to a temporary file
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as tmpfile:
         tmpfile.write(code)
         tmpfile_path = tmpfile.name
 
     try:
+        # Run the code and pass input to the process
         result = subprocess.run(
             ['python3', tmpfile_path],
+            input=input_text,
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -38,11 +39,11 @@ def run_code(code: str, timeout=5):
             'returncode': -1
         }
     finally:
-        os.remove(tmpfile_path)
+        os.remove(tmpfile_path)  # Clean up the temp file
 
 @app.route('/')
 def home():
-    return 'Hello, World!'
+    return 'Hello, World! The server is running.'
 
 @app.route('/run-job', methods=['POST'])
 def run_job():
@@ -53,8 +54,9 @@ def run_job():
 
     job_id = data['job_id']
     code = data['code']
+    input_text = data.get('input', '')  # Optional input
 
-    result = run_code(code)
+    result = run_code(code, input_text)
 
     return jsonify({
         "job_id": job_id,
