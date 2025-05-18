@@ -47,7 +47,7 @@ export default function CodeRunner() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-center">Code Runner</h1>
+      <h1 className="text-3xl font-bold text-center">Python-code-Editor</h1>
 
       <div>
         <label className="block font-semibold mb-1">Code</label>
