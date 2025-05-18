@@ -2,8 +2,16 @@ from flask import Flask, request, jsonify
 import subprocess
 import tempfile
 import os
+from dotenv import load_dotenv
+load_dotenv()
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+frontend_origin=os.getenv("FRONTEND_URL", "*")
+
+CORS(app, origins=[frontend_origin])
+
 
 def run_code(code: str, timeout=5):
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as tmpfile:
@@ -31,6 +39,10 @@ def run_code(code: str, timeout=5):
         }
     finally:
         os.remove(tmpfile_path)
+
+@app.route('/')
+def home():
+    return 'Hello, World!'
 
 @app.route('/run-job', methods=['POST'])
 def run_job():
