@@ -3,3 +3,4 @@ redis
 gunicorn
 docker
 flask-cors
+python-dotenv
