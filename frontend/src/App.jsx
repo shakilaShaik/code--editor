@@ -2,57 +2,47 @@ import React, { useState, useEffect } from "react";
 
 export default function CodeRunner() {
   const [code, setCode] = useState('print("Hello, World!")');
-  const [input, setInput] = useState("");
   const [jobId, setJobId] = useState(null);
   const [result, setResult] = useState(null);
-  const [status, setStatus] = useState(null);
-  const [polling, setPolling] = useState(false);
+  const [errors, setErrors] = useState(null);
+  const [returnCode, setReturnCode] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Poll for result every 2 seconds when polling is enabled
-  useEffect(() => {
-    if (!polling || !jobId) return;
+  // Generate a random job id each time you run code
+  function generateJobId() {
+    return Math.random().toString(36).substr(2, 9);
+  }
 
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`http://localhost:5050/result/${jobId}`);
-        const data = await res.json();
-
-        if (data.status === "done" || data.status === "error") {
-          setResult(data.output || JSON.stringify(data));
-          setStatus(data.status);
-          setPolling(false);
-        } else {
-          setStatus(data.status);
-        }
-      } catch (err) {
-        setResult("Error fetching result");
-        setStatus("error");
-        setPolling(false);
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [polling, jobId]);
-
-  // Submit code for execution
   async function runCode() {
     setResult(null);
-    setStatus("queued");
-    setPolling(true);
+    setErrors(null);
+    setReturnCode(null);
+    setLoading(true);
+
+    const newJobId = generateJobId();
+    setJobId(newJobId);
 
     try {
-      const res = await fetch("http://localhost:5050/run", {
+      const res = await fetch("https://code-ediitor.onrender.com/run-job", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, input }),
+        body: JSON.stringify({ job_id: newJobId, code }),
       });
+
       const data = await res.json();
-      setJobId(data.job_id);
+
+      if (res.ok) {
+        setResult(data.output);
+        setErrors(data.errors);
+        setReturnCode(data.returncode);
+      } else {
+        setErrors(data.error || "Error running code");
+      }
     } catch (err) {
-      setResult("Failed to submit code");
-      setStatus("error");
-      setPolling(false);
+      setErrors("Network error");
     }
+
+    setLoading(false);
   }
 
   return (
@@ -69,34 +59,22 @@ export default function CodeRunner() {
         />
       </div>
 
-      <div>
-        <label className="block font-semibold mb-1">Input (optional)</label>
-        <textarea
-          rows={3}
-          className="w-full p-3 border rounded-md font-mono bg-gray-100"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
-      </div>
-
       <button
         onClick={runCode}
-        disabled={polling}
+        disabled={loading}
         className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
-        {polling ? "Running..." : "Run Code"}
+        {loading ? "Running..." : "Run Code"}
       </button>
 
-      {status && (
-        <div className="mt-4 p-4 border rounded bg-gray-50">
-          <p>
-            <strong>Status:</strong> {status}
-          </p>
-        </div>
-      )}
+      {jobId && <p className="mt-4 text-sm text-gray-600">Job ID: {jobId}</p>}
 
-      {result && (
-        <div className="mt-4 p-4 bg-gray-900 text-green-300 rounded font-mono whitespace-pre-wrap">
-          {result}
+      {(result !== null || errors !== null) && (
+        <div className="mt-4 p-4 border rounded bg-gray-50 font-mono whitespace-pre-wrap">
+          <strong>Output:</strong>
+          <pre>{result || "(No output)"}</pre>
+          <strong>Errors:</strong>
+          <pre>{errors || "(No errors)"}</pre>
+          <strong>Return Code:</strong> {returnCode}
         </div>
       )}
     </div>
