@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 export default function CodeRunner() {
   const [code, setCode] = useState('print("Hello, World!")');
+  const [inputText, setInputText] = useState(""); // New: Input from user
   const [jobId, setJobId] = useState(null);
   const [result, setResult] = useState(null);
   const [errors, setErrors] = useState(null);
   const [returnCode, setReturnCode] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Generate a random job id each time you run code
   function generateJobId() {
     return Math.random().toString(36).substr(2, 9);
   }
@@ -26,7 +26,11 @@ export default function CodeRunner() {
       const res = await fetch("https://code-ediitor.onrender.com/run-job", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_id: newJobId, code }),
+        body: JSON.stringify({
+          job_id: newJobId,
+          code,
+          input: inputText, // Include input field
+        }),
       });
 
       const data = await res.json();
@@ -47,7 +51,7 @@ export default function CodeRunner() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-center">Python-code-Editor</h1>
+      <h1 className="text-3xl font-bold text-center">Python Code Editor</h1>
 
       <div>
         <label className="block font-semibold mb-1">Code</label>
@@ -56,6 +60,17 @@ export default function CodeRunner() {
           className="w-full p-3 border rounded-md font-mono bg-gray-900 text-green-400"
           value={code}
           onChange={(e) => setCode(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-1">Input</label>
+        <textarea
+          rows={4}
+          placeholder="Enter input for your code here"
+          className="w-full p-3 border rounded-md font-mono bg-gray-100 text-black"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
         />
       </div>
 
